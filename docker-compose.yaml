@@ -1,0 +1,15 @@
+﻿version: "3.4"
+services:
+	postsapi:
+		build:
+			context: .
+		container_name: postsapi
+		image: fatihbe25/postsapi:1.0
+		ports:
+		- 80:80
+		volumes:
+		- ./PostAPI/:/work
+		working_dir: /work
+		entrypoint: /bin/bash
+		stdin_open: true
+		tty: true
