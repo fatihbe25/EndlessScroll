@@ -1,23 +1,24 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:6.0-focal as dev
+﻿# Build Stage
 
-RUN mkdir /work/
-WORKDIR /work
+FROM mcr.microsoft.com/dotnet/sdk:6.0-focal AS  build
 
-COPY ./PostAPI/PostAPI.csproj /work/PostAPI.csproj
-RUN dotnet restore
+WORKDIR /source
 
-COPY ./PostAPI /work
-RUN mkdir /out/
+COPY . .
 
-RUN dotnet publish --no-restore --output /out --configuration Release 
+RUN dotnet restore "./PostAPI/PostAPI.csproj" --disable-parallel
+RUN dotnet publish "./PostAPI/PostAPI.csproj" -c release -o /app --no-restore 
 
+# Serve Stage 
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal as prod
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal
 
-RUN mkdir /app/
-WORKDIR /app/
+WORKDIR /app
 
-copy --from=dev /out/  /app/
+COPY --from=build /app ./
 
-RUN chmod +x /app/ 
-CMD dotnet work.dll
+EXPOSE 5000
+
+RUN chmod +x /app/
+ENTRYPOINT ["dotnet", "PostAPI.dll"]
+

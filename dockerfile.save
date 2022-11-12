@@ -1,0 +1,24 @@
+﻿# Build Stage 
+ 
+FROM mcr.microsoft.com/dotnet/sdk:6.0-focal AS build
+
+WORKDIR /source
+
+COPY . .
+
+RUN dotnet restore "./PostAPI/PostAPI.csproj" --disable-parallel
+RUN dotnet publish "./PostAPI/PostAPI.csproj" -c release -o /app --no-restore 
+
+# Serve Stage
+
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal as prod
+
+WORKDIR /app
+
+COPY --from=build /app  ./
+
+#RUN chmod +x /app/ 
+
+EXPOSE 80
+
+ENTRYPOINT ["dotnet","PostAPI.dll"]
